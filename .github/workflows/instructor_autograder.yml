@@ -1,0 +1,31 @@
+name: Instructor autograder
+on:
+  workflow_call:
+    inputs:
+      source-artifact-id:
+        required: true
+        type: string
+    outputs:
+      score:
+        value: ${{ jobs.grading.outputs.score }}
+permissions: { contents: read, actions: read }
+jobs:
+  grading:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      score: 0
+    outputs:
+      score: ${{ steps.final-score.outputs.score }}
+    permissions: { contents: read, actions: read }
+    steps:
+      - uses: abstractclassroom/code-assignments-workflows/restore@v1.2.0
+        with:
+          source-artifact-id: ${{ inputs.source-artifact-id }}
+      # Add your build/test steps here and update score through $GITHUB_ENV.
+      # Keep this step last in grading.
+      - name: Save final score
+        id: final-score
+        shell: bash
+        run: printf 'score=%s\n' "$score" >> "$GITHUB_OUTPUT"
+

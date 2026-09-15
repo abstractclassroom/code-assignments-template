@@ -1,5 +1,5 @@
 # Do not rename this file. AbstractClassroom verifies auto-grading-workflow.yml.
-# Set the assignment ID, files, and source version in auto-grading-config.json.
+# Configure auto-grading-config.json; put tests and scoring in instructor_autograder.yml.
 name: Auto grading
 on: [push, workflow_dispatch]
 permissions: { contents: read }
@@ -7,27 +7,24 @@ jobs:
   source:
     if: github.repository != 'abstractclassroom/code-assignments-template'
     permissions: { contents: read, id-token: write }
-    uses: abstractclassroom/code-assignments-workflows/.github/workflows/source.yml@v1.0.0
+    uses: abstractclassroom/code-assignments-workflows/.github/workflows/source.yml@v1.2.0
     secrets:
       source-pairing-token: ${{ secrets.ABSTRACTCLASSROOM_SOURCE_TOKEN }}
 
   grading:
     needs: source
     if: needs.source.outputs.mode == 'grade'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
     permissions: { contents: read, actions: read }
-    steps:
-      - uses: abstractclassroom/code-assignments-workflows/restore@v1.0.0
-        with:
-          source-artifact-id: ${{ needs.source.outputs.artifact-id }}
-      # Add your build and test steps here. Failed tests must fail the step.
+    uses: ./.github/workflows/instructor_autograder.yml
+    with:
+      source-artifact-id: ${{ needs.source.outputs.artifact-id }}
 
   # Keep the JWT call last, after your grading has succeeded.
   jwt:
     needs: [source, grading]
     if: needs.source.outputs.mode == 'grade' && needs.grading.result == 'success'
     permissions: { contents: read, id-token: write }
-    uses: abstractclassroom/code-assignments-workflows/.github/workflows/jwt.yml@v1.0.0
+    uses: abstractclassroom/code-assignments-workflows/.github/workflows/jwt.yml@v1.2.0
     with:
       assignment-id: ${{ needs.source.outputs.assignment-id }}
+      grade: ${{ needs.grading.outputs.score }}
