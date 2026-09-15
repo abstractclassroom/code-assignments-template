@@ -7,7 +7,7 @@ jobs:
   source:
     if: github.repository != 'abstractclassroom/code-assignments-template'
     permissions: { contents: read, id-token: write }
-    uses: abstractclassroom/code-assignments-workflows/.github/workflows/source.yml@v1.2.0
+    uses: abstractclassroom/code-assignments-workflows/.github/workflows/source.yml@v1.3.0
     secrets:
       source-pairing-token: ${{ secrets.ABSTRACTCLASSROOM_SOURCE_TOKEN }}
 
@@ -24,7 +24,7 @@ jobs:
     needs: [source, grading]
     if: needs.source.outputs.mode == 'grade' && needs.grading.result == 'success'
     permissions: { contents: read, id-token: write }
-    uses: abstractclassroom/code-assignments-workflows/.github/workflows/jwt.yml@v1.2.0
+    uses: abstractclassroom/code-assignments-workflows/.github/workflows/jwt.yml@v1.3.0
     with:
       assignment-id: ${{ needs.source.outputs.assignment-id }}
       grade: ${{ needs.grading.outputs.score }}

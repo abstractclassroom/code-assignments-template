@@ -19,7 +19,7 @@ jobs:
       score: ${{ steps.final-score.outputs.score }}
     permissions: { contents: read, actions: read }
     steps:
-      - uses: abstractclassroom/code-assignments-workflows/restore@v1.2.0
+      - uses: abstractclassroom/code-assignments-workflows/restore@v1.3.0
         with:
           source-artifact-id: ${{ inputs.source-artifact-id }}
       # Add your build/test steps here and update score through $GITHUB_ENV.
