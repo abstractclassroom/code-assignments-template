@@ -43,7 +43,7 @@ You may remove the GitHub secret after the first successful pairing.
 
 Create a repository from the **instructor's** template. Work on `main`, write code
 and your own tests as instructed, and push. Keep the assignment workflow unchanged.
-When grading succeeds, download the **assignment-completion-token-<attempt>** artifact from
+When grading succeeds, download the `assignment-completion-token-<attempt>` artifact from
 the Actions run, unzip it, and submit the `.ast` file to your LMS. No student secret
 or AbstractClassroom registration is needed. The instructor's source publish and
 the student's grading run are selected automatically from repository identity.

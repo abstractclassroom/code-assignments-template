@@ -41,7 +41,7 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           repository: abstractclassroom/code-assignments-template
-          ref: c4fff0b1ecdbf431a35b076819bc830ea174fe71
+          ref: bf928f54451a01efc1c7c17c1429ac97ea036b34
           path: runtime
           persist-credentials: false
       - name: Authenticate and verify the registered workflow
@@ -85,7 +85,7 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           repository: abstractclassroom/code-assignments-template
-          ref: c4fff0b1ecdbf431a35b076819bc830ea174fe71
+          ref: bf928f54451a01efc1c7c17c1429ac97ea036b34
           path: runtime
           persist-credentials: false
       - name: Download only the artifact created by this run's trusted preparation job
