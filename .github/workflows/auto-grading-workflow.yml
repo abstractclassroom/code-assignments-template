@@ -1,5 +1,5 @@
 # Do not rename this file. AbstractClassroom verifies auto-grading-workflow.yml.
-# Configure auto-grading-config.json; put tests and scoring in .github/actions/instructor/action.yml.
+# Configure .github/actions/instructor/auto-grading-config.json; put tests and scoring in action.yml beside it.
 name: Auto grading
 on: [push, workflow_dispatch]
 permissions: { contents: read }
@@ -7,7 +7,7 @@ jobs:
   source:
     if: github.repository != 'abstractclassroom/code-assignments-template'
     permissions: { contents: read, id-token: write }
-    uses: abstractclassroom/code-assignments-workflows/.github/workflows/source.yml@v3.0.0
+    uses: abstractclassroom/code-assignments-workflows/.github/workflows/source.yml@v4.0.0
     secrets:
       source-pairing-token: ${{ secrets.ABSTRACTCLASSROOM_SOURCE_TOKEN }}
 
@@ -15,7 +15,7 @@ jobs:
     needs: source
     if: needs.source.outputs.mode == 'grade'
     permissions: { contents: read, actions: read }
-    uses: abstractclassroom/code-assignments-workflows/.github/workflows/grading.yml@v3.0.0
+    uses: abstractclassroom/code-assignments-workflows/.github/workflows/grading.yml@v4.0.0
     with:
       workspace-artifact-id: ${{ needs.source.outputs.artifact-id }}
 
@@ -25,7 +25,7 @@ jobs:
     needs: [source, grading]
     if: needs.source.outputs.mode == 'grade' && needs.grading.result == 'success'
     permissions: { contents: read, id-token: write }
-    uses: abstractclassroom/code-assignments-workflows/.github/workflows/jwt.yml@v3.0.0
+    uses: abstractclassroom/code-assignments-workflows/.github/workflows/jwt.yml@v4.0.0
     with:
       assignment-id: ${{ needs.source.outputs.assignment-id }}
       grade: ${{ needs.grading.outputs.score }}

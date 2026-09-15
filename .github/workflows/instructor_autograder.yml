@@ -1,7 +1,0 @@
-# Manual score-only checks. Edit .github/actions/instructor/action.yml for grading.
-name: Instructor autograder
-on: [workflow_dispatch]
-permissions: { contents: read, actions: read }
-jobs:
-  grading:
-    uses: abstractclassroom/code-assignments-workflows/.github/workflows/grading.yml@v3.0.0
