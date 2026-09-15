@@ -1,45 +1,7 @@
+# Manual score-only checks. Edit .github/actions/instructor/action.yml for grading.
 name: Instructor autograder
-on:
-  workflow_dispatch:
-  workflow_call:
-    inputs:
-      workspace-artifact-id: { type: string, required: true }
-    outputs:
-      score: { value: '${{ jobs.grading.outputs.score }}' }
+on: [workflow_dispatch]
 permissions: { contents: read, actions: read }
 jobs:
   grading:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    env:
-      score: 0
-    outputs:
-      score: ${{ steps.final-score.outputs.score }}
-    permissions: { contents: read, actions: read }
-    steps:
-      - name: Check out for standalone grading
-        if: inputs.workspace-artifact-id == ''
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          ref: ${{ github.sha }}
-          persist-credentials: false
-      - name: Download prepared workspace
-        if: inputs.workspace-artifact-id != ''
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          artifact-ids: ${{ inputs.workspace-artifact-id }}
-          path: ${{ runner.temp }}/assignment-workspace
-          merge-multiple: true
-      - name: Open prepared workspace
-        if: inputs.workspace-artifact-id != ''
-        shell: bash
-        run: tar -xzf "$RUNNER_TEMP/assignment-workspace/workspace.tar.gz" -C "$GITHUB_WORKSPACE"
-      # Add your build/test steps here and update score through $GITHUB_ENV.
-      - name: Show score
-        shell: bash
-        run: printf '### Score\n\n%s\n' "$score" >> "$GITHUB_STEP_SUMMARY"
-      # Keep this step last in grading.
-      - name: Save final score
-        id: final-score
-        shell: bash
-        run: printf 'score=%s\n' "$score" >> "$GITHUB_OUTPUT"
+    uses: abstractclassroom/code-assignments-workflows/.github/workflows/grading.yml@v3.0.0

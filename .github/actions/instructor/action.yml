@@ -1,0 +1,18 @@
+name: Instructor grading
+description: Run instructor tests and calculate the assignment score
+outputs:
+  score:
+    description: Points earned by this submission
+    value: ${{ steps.final-score.outputs.score }}
+runs:
+  using: composite
+  steps:
+    - name: Initialize score
+      shell: bash
+      run: printf 'score=0\n' >> "$GITHUB_ENV"
+    # Add build/test steps here and update score through $GITHUB_ENV.
+    # Keep this step last.
+    - name: Save final score
+      id: final-score
+      shell: bash
+      run: printf 'score=%s\n' "$score" >> "$GITHUB_OUTPUT"
