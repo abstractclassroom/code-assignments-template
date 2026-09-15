@@ -1,0 +1,112 @@
+name: Publish source or grade an assignment
+on:
+  workflow_call:
+    inputs:
+      assignment-id:
+        required: true
+        type: string
+      replace-paths:
+        required: true
+        type: string
+    secrets:
+      source-pairing-token:
+        required: false
+
+permissions:
+  contents: read
+  actions: read
+  id-token: write
+
+jobs:
+  prepare:
+    name: Verify workflow and resolve instructor source
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      mode: ${{ steps.source.outputs.mode }}
+      artifact-id: ${{ steps.package.outputs.artifact-id }}
+    steps:
+      - name: Read the exact submitted revision
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.sha }}
+          path: submission
+          persist-credentials: false
+          submodules: false
+          lfs: false
+      - name: Load the pinned AbstractClassroom runtime
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          repository: abstractclassroom/code-assignments-template
+          ref: bf928f54451a01efc1c7c17c1429ac97ea036b34
+          path: runtime
+          persist-credentials: false
+      - name: Authenticate and verify the registered workflow
+        id: source
+        env:
+          ASSIGNMENT_ID: ${{ inputs.assignment-id }}
+          REPLACE_PATHS: ${{ inputs.replace-paths }}
+          SOURCE_PAIRING_TOKEN: ${{ secrets.source-pairing-token }}
+          SUBMISSION_PATH: ${{ github.workspace }}/submission
+          PACKAGE_PATH: ${{ runner.temp }}/ac-source-package
+        run: python3 "$GITHUB_WORKSPACE/runtime/scripts/protocol.py" prepare
+      - name: Preserve the verified source package for grading
+        if: steps.source.outputs.mode == 'grade'
+        id: package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: assignment-source-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/ac-source-package/source.json
+          if-no-files-found: error
+          retention-days: 1
+
+  grade:
+    name: Run the required instructor checks
+    needs: prepare
+    if: needs.prepare.outputs.mode == 'grade'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Read the exact submitted revision
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.sha }}
+          path: submission
+          persist-credentials: false
+          submodules: false
+          lfs: false
+      - name: Load the pinned grading supervisor
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          repository: abstractclassroom/code-assignments-template
+          ref: bf928f54451a01efc1c7c17c1429ac97ea036b34
+          path: runtime
+          persist-credentials: false
+      - name: Download only the artifact created by this run's trusted preparation job
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          artifact-ids: ${{ needs.prepare.outputs.artifact-id }}
+          path: ${{ runner.temp }}/ac-source-package
+          merge-multiple: true
+      - name: Restore protected files and supervise grading without receipt credentials
+        env:
+          SUBMISSION_PATH: ${{ github.workspace }}/submission
+          SOURCE_PACKAGE: ${{ runner.temp }}/ac-source-package/source.json
+        run: python3 "$GITHUB_WORKSPACE/runtime/scripts/grade.py"
+
+  receipt:
+    name: Issue the assignment completion token
+    needs: [prepare, grade]
+    if: needs.grade.result == 'success' && needs.prepare.outputs.mode == 'grade'
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/receipt.yml
+    with:
+      assignment-id: ${{ inputs.assignment-id }}

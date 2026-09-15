@@ -48,7 +48,14 @@ def request(url, headers, body=None):
             return json.loads(data)
     except urllib.error.HTTPError as error:
         # Do not print response bodies: source pairing secrets and JWTs stay out of logs.
-        raise RuntimeError(f"AbstractClassroom request failed (HTTP {error.code}); check the assignment and course subscription.") from None
+        code = "request_failed"
+        try:
+            supplied = json.loads(error.read(4096)).get("error", {}).get("code", "")
+            if re.fullmatch(r"[a-z_]{1,80}", supplied):
+                code = supplied
+        except (ValueError, AttributeError):
+            pass
+        raise RuntimeError(f"AbstractClassroom request failed (HTTP {error.code}, {code}); see the template troubleshooting guide.") from None
 
 
 def oidc():
@@ -174,5 +181,5 @@ if __name__ == "__main__":
         {"prepare": prepare, "receipt": receipt}[sys.argv[1]]()
     except Exception as error:
         # Do not include variable data or command output in workflow annotations.
-        print(f"AbstractClassroom stopped: {type(error).__name__}. See the template troubleshooting guide.")
+        print("AbstractClassroom stopped: " + json.dumps(str(error)))
         sys.exit(1)

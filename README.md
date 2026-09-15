@@ -43,7 +43,7 @@ You may remove the GitHub secret after the first successful pairing.
 
 Create a repository from the **instructor's** template. Work on `main`, write code
 and your own tests as instructed, and push. Keep the assignment workflow unchanged.
-When grading succeeds, download the **assignment-completion-token** artifact from
+When grading succeeds, download the `assignment-completion-token-<attempt>` artifact from
 the Actions run, unzip it, and submit the `.ast` file to your LMS. No student secret
 or AbstractClassroom registration is needed. The instructor's source publish and
 the student's grading run are selected automatically from repository identity.
@@ -156,6 +156,10 @@ The backend retains old verification keys. There is no automatic LMS grade sync.
   pinned public AbstractClassroom reusable workflow in the organization's policy.
 - API unavailable: keep the failed run and retry later. A failed or unavailable
   service never issues a passing token.
+- To retry, choose **Re-run all jobs** so the new run attempt gets its own source
+  verification and receipt authorization. Re-running only a failed job cannot reuse
+  an earlier attempt's authorization. Download tokens within the 30-day artifact
+  retention period and keep the `.ast` file with your LMS submission.
 
 ## Development
 

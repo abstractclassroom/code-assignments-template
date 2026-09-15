@@ -1,0 +1,34 @@
+name: Issue a verified assignment receipt
+on:
+  workflow_call:
+    inputs:
+      assignment-id:
+        required: true
+        type: string
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  receipt:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Load the pinned receipt client
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          repository: abstractclassroom/code-assignments-template
+          ref: bf928f54451a01efc1c7c17c1429ac97ea036b34
+          path: runtime
+          persist-credentials: false
+      - name: Authenticate this successful run and request its token
+        env:
+          ASSIGNMENT_ID: ${{ inputs.assignment-id }}
+          RECEIPT_PATH: ${{ runner.temp }}/ac-receipt
+        run: python3 "$GITHUB_WORKSPACE/runtime/scripts/protocol.py" receipt
+      - name: Make the completion token available to the student
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: assignment-completion-token-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/ac-receipt/*.ast
+          if-no-files-found: error
+          retention-days: 30

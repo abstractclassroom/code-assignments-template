@@ -1,0 +1,20 @@
+name: Validate assignment runtime
+on:
+  push:
+    branches: [main, feat/code-assignments-workflows]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    if: github.repository == 'abstractclassroom/code-assignments-template'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Validate report contracts and filesystem protections
+        run: python3 -m unittest discover -s tests -p 'test_*.py'
+      - name: Exercise real containers with passing, failing, and premature-exit submissions
+        run: python3 tests/container_smoke.py
