@@ -1,0 +1,20 @@
+name: AbstractClassroom assignment
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+  id-token: write
+jobs:
+  assignment:
+    if: github.repository != 'abstractclassroom/code-assignments-template'
+    uses: abstractclassroom/code-assignments-template/.github/workflows/assignment.yml@577666f573c8afdc7e5f3fa3be1a2d7e5c88018d
+    with:
+      assignment-id: REPLACE_WITH_ASSIGNMENT_ID
+      # Delete these student paths entirely, then restore the registered source.
+      replace-paths: |
+        grading
+    secrets:
+      source-pairing-token: ${{ secrets.ABSTRACTCLASSROOM_SOURCE_TOKEN }}
